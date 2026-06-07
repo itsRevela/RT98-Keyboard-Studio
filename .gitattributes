@@ -1,0 +1,13 @@
+* text=auto
+
+# Shell scripts must be LF (CRLF breaks the shebang on macOS/Linux)
+*.sh text eol=lf
+# Windows batch files want CRLF
+*.bat text eol=crlf
+
+# Treat these as binary
+*.wasm binary
+*.gif  binary
+*.png  binary
+*.jpg  binary
+*.ico  binary

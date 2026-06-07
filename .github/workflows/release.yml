@@ -1,0 +1,99 @@
+name: Release (Windows EXE)
+
+# Manual only: run from the Actions tab via "Run workflow".
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. v0.1.0)"
+        required: true
+      title:
+        description: "Release title"
+        required: true
+      notes:
+        description: "Release description / notes (Markdown)"
+        required: false
+        default: ""
+      prerelease:
+        description: "Mark as a pre-release"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write   # create the release + tag
+
+jobs:
+  windows-exe:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Fetch bundled runtimes (Node + ffmpeg)
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force packaging/bin | Out-Null
+          $node = "v20.18.0"   # bump as needed
+          Invoke-WebRequest "https://nodejs.org/dist/$node/win-x64/node.exe" -OutFile packaging/bin/node.exe
+          Invoke-WebRequest "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip" -OutFile ffmpeg.zip
+          Expand-Archive ffmpeg.zip -DestinationPath ffmpeg_extract -Force
+          $ff = Get-ChildItem -Recurse ffmpeg_extract -Filter ffmpeg.exe | Select-Object -First 1
+          Copy-Item $ff.FullName packaging/bin/ffmpeg.exe
+          Get-ChildItem packaging/bin
+
+      - name: Build exe (PyInstaller)
+        run: pyinstaller --noconfirm rt98studio.spec
+
+      - name: Import GPG signing key
+        shell: bash
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+        run: |
+          if [ -z "$GPG_PRIVATE_KEY" ]; then
+            echo "::error::GPG_PRIVATE_KEY secret is not set"; exit 1
+          fi
+          echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+          gpg --list-secret-keys --keyid-format=long
+
+      - name: Sign exe and export public key
+        shell: bash
+        env:
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" \
+              --armor --detach-sign --output dist/RT98Studio.exe.asc dist/RT98Studio.exe
+          gpg --batch --yes --armor --export > dist/RT98Studio-signing-key.asc
+          gpg --verify dist/RT98Studio.exe.asc dist/RT98Studio.exe
+          sha256sum dist/RT98Studio.exe | tee dist/RT98Studio.exe.sha256
+
+      - name: Create GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.tag }}
+          TITLE: ${{ inputs.title }}
+          NOTES: ${{ inputs.notes }}
+          PRERELEASE: ${{ inputs.prerelease }}
+          TARGET: ${{ github.sha }}
+        run: |
+          printf '%s' "$NOTES" > notes.md
+          PRE=""
+          if [ "$PRERELEASE" = "true" ]; then PRE="--prerelease"; fi
+          gh release create "$TAG" \
+            --target "$TARGET" \
+            --title "$TITLE" \
+            --notes-file notes.md \
+            $PRE \
+            dist/RT98Studio.exe \
+            dist/RT98Studio.exe.asc \
+            dist/RT98Studio.exe.sha256 \
+            dist/RT98Studio-signing-key.asc
