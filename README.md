@@ -19,22 +19,42 @@
 
 ## Getting started
 
-You'll need **Python 3.9+**. For sending GIFs you'll also want **Node.js**, and for
-importing video, **ffmpeg**. All must be installed and on your PATH.
+Three ways to run it. The download is the easiest; the source options are for
+other platforms or if you'd rather not grab a binary.
 
-**Windows**
+### Download the app (Windows)
 
-1. Double-click `setup.bat` (makes a local environment and installs everything).
-2. Double-click `run.bat`.
+Grab `RT98Studio.exe` from the [latest release](https://github.com/itsRevela/RT98-Keyboard-Studio/releases/latest)
+and double-click it. Everything is bundled in (no Python, Node, or ffmpeg to
+install). Windows may warn on first launch since the exe is signed with GPG
+rather than a paid store certificate; choose **More info -> Run anyway**.
 
-**macOS / Linux**
+### From source, with the launchers
+
+You'll need **Python 3.9+**. For sending GIFs also install **Node.js**, and for
+importing video, **ffmpeg** (both on your PATH).
+
+**Windows:** double-click `setup.bat` once, then `run.bat`.
+
+**macOS / Linux:**
 
 ```sh
 ./setup.sh
 ./run.sh
 ```
 
-Then import a GIF, tweak it, and hit **Send to keyboard**.
+### From source, with plain Python
+
+Same requirements as above, just without the launcher scripts:
+
+```sh
+python -m venv .venv
+# activate:  .venv\Scripts\activate  (Windows)   source .venv/bin/activate  (macOS/Linux)
+pip install -r requirements.txt
+python run.py
+```
+
+Once it's open, import a GIF, tweak it, pick a screen, and hit **Send to keyboard**.
 
 ## Good to know
 
