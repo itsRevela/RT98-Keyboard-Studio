@@ -90,6 +90,8 @@ All notable changes to this project are documented here, following
   - "Sync time" (and other transfers) no longer load the first library clip into
     the editor. Disabling the focused button shifted focus to the library list,
     which auto-selected row 0 on focus; the list is now click-focus only.
+  - The packaged (windowed) exe no longer flashes a console window when it shells
+    out to Node/ffmpeg (`CREATE_NO_WINDOW` on the encoder/video subprocesses).
 
 ### Notes
 - Animated GIF upload uses the device's proprietary "qgif" format via the vendor

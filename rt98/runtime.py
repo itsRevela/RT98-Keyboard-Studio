@@ -8,7 +8,12 @@ from __future__ import annotations
 
 import os
 import shutil
+import subprocess
 import sys
+
+# Suppress the console window when launching console exes (node/ffmpeg) from a
+# windowed (no-console) build. 0 / no-op on non-Windows.
+CREATE_NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 
 
 def meipass() -> str | None:

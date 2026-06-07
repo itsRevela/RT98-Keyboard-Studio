@@ -10,7 +10,7 @@ import os
 import subprocess
 from typing import Optional
 
-from .runtime import tool_available, tool_command
+from .runtime import CREATE_NO_WINDOW, tool_available, tool_command
 
 
 class VideoError(RuntimeError):
@@ -50,7 +50,7 @@ def video_to_gif(src: str, out_gif: str, opts: Optional[VideoOptions] = None) ->
         cmd += ["-t", str(opts.duration)]
     cmd += ["-i", src, "-vf", vf, "-loop", "0" if opts.loop else "-1", out_gif]
 
-    res = subprocess.run(cmd, capture_output=True, text=True)
+    res = subprocess.run(cmd, capture_output=True, text=True, creationflags=CREATE_NO_WINDOW)
     if res.returncode != 0 or not os.path.isfile(out_gif):
         tail = "\n".join((res.stderr or "").strip().splitlines()[-4:])
         raise VideoError("ffmpeg failed:\n%s" % tail)

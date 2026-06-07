@@ -15,7 +15,7 @@ from typing import Protocol, Sequence
 
 from PIL import Image
 
-from .runtime import meipass, tool_available, tool_command
+from .runtime import CREATE_NO_WINDOW, meipass, tool_available, tool_command
 
 # Bundled (PyInstaller) puts the qgif data under <bundle>/rt98/qgif; from source
 # it sits next to this module.
@@ -64,7 +64,7 @@ class WasmQgifEncoder:
                 frame.convert("RGB").save(os.path.join(work, "input_%d.png" % i))
             res = subprocess.run(
                 [self.node, QGIF_RUNNER, work, str(max(1, int(fps))), out_path],
-                capture_output=True, text=True,
+                capture_output=True, text=True, creationflags=CREATE_NO_WINDOW,
             )
             if res.returncode != 0 or not os.path.isfile(out_path):
                 raise EncoderError("qgif compression failed: %s" % (res.stderr.strip() or "unknown"))
