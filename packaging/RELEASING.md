@@ -62,5 +62,5 @@ sha256sum -c RT98Studio.exe.sha256                       # integrity check
 - The bundled Node + ffmpeg make the exe fully self-contained (no installs), at
   the cost of size (~100-150 MB). Bump the Node version in the workflow's
   "Fetch bundled runtimes" step as needed.
-- Tag signing in CI presets the passphrase into the gpg-agent; if it ever fails
-  the workflow falls back to an unsigned tag so the release still publishes.
+- Tag signing in CI uses a loopback gpg wrapper; if it ever fails the workflow
+  falls back to an unsigned tag so the release still publishes.
