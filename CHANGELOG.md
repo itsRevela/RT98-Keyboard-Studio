@@ -10,9 +10,10 @@ All notable changes to this project are documented here, following
   `workflow_dispatch`): builds a single self-contained `RT98Studio.exe` via
   PyInstaller (`rt98studio.spec`) bundling the app, Python deps, qgif WASM, icon,
   tz database, the hidapi DLL, and Node + ffmpeg; GPG-signs the exe (detached
-  `.asc` + SHA-256 + exported public key) and publishes a GitHub Release with a
+  `.asc` + SHA-256) and the release tag, then publishes a GitHub Release with a
   given title/notes. `rt98/runtime.py` resolves the bundled Node/ffmpeg when
-  frozen (falls back to PATH from source). See `packaging/RELEASING.md`.
+  frozen (falls back to PATH from source). Commits and tags are GPG-signed for
+  the "Verified" badge. See `packaging/RELEASING.md`.
 - App/window icon (`app/assets/icon.png` + multi-size `icon.ico`), set on the
   window and taskbar; on Windows an explicit AppUserModelID is set so the
   taskbar shows the app icon rather than the generic Python icon (`app/main.py`).

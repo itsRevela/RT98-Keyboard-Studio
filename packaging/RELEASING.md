@@ -34,13 +34,23 @@ gpg --armor --export <KEYID> > RT98Studio-signing-key.asc   # public key, for re
    - **title** - the release title
    - **notes** - Markdown description (optional)
    - **prerelease** - check for a pre-release
-4. The release appears with `RT98Studio.exe` plus its signature, checksum, and
-   the public key.
+4. The workflow creates a **GPG-signed tag**, then publishes the release with
+   `RT98Studio.exe`, its detached signature, and a SHA-256 checksum.
+
+## Verified commits & tags (the green checkmark)
+
+GitHub shows the "Verified" badge on signed commits/tags only when the matching
+**public** key is on the account. One-time: copy the public key into
+**Settings -> SSH and GPG keys -> New GPG key** (the committer email must be a
+verified email on the account). Commits are signed locally (`commit.gpgsign`),
+and the workflow signs each release tag.
 
 ## How users verify the download
 
+The public key is published on the maintainer's GitHub profile:
+
 ```sh
-gpg --import RT98Studio-signing-key.asc
+curl -sL https://github.com/itsRevela.gpg | gpg --import
 gpg --verify RT98Studio.exe.asc RT98Studio.exe          # expect "Good signature"
 sha256sum -c RT98Studio.exe.sha256                       # integrity check
 ```
@@ -52,5 +62,5 @@ sha256sum -c RT98Studio.exe.sha256                       # integrity check
 - The bundled Node + ffmpeg make the exe fully self-contained (no installs), at
   the cost of size (~100-150 MB). Bump the Node version in the workflow's
   "Fetch bundled runtimes" step as needed.
-- The git tag itself is not GPG-signed (only the artifact). Sign the tag
-  separately if you want a "Verified" badge on the tag.
+- Tag signing in CI presets the passphrase into the gpg-agent; if it ever fails
+  the workflow falls back to an unsigned tag so the release still publishes.
